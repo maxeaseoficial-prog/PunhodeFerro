@@ -79,13 +79,122 @@ class BootScene extends Phaser.Scene {
     this.load.image('stage-picnic', '/assets/stage-picnic.jpg');
     this.load.image('fighters', '/assets/fighters.webp');
   }
+
   create() {
+    this.ensureFallbacks();
+
     const fighterTex = this.textures.get('fighters');
-    fighterTex.add('bob', 0, 0, 0, 384, 384);
-    fighterTex.add('julio', 0, 384, 0, 384, 384);
-    fighterTex.add('orc', 0, 0, 384, 384, 384);
-    fighterTex.add('teddy', 0, 384, 384, 384, 384);
+    if (!fighterTex.has('bob')) fighterTex.add('bob', 0, 0, 0, 384, 384);
+    if (!fighterTex.has('julio')) fighterTex.add('julio', 0, 384, 0, 384, 384);
+    if (!fighterTex.has('orc')) fighterTex.add('orc', 0, 0, 384, 384, 384);
+    if (!fighterTex.has('teddy')) fighterTex.add('teddy', 0, 384, 384, 384, 384);
     this.scene.start('menu');
+  }
+
+  private ensureFallbacks() {
+    if (!this.textures.exists('stage-grass')) this.makeStage('stage-grass', '#39b9ff', '#76d34d', 'CAMPO DOS BLOCOS');
+    if (!this.textures.exists('stage-ship')) this.makeStage('stage-ship', '#29a7ef', '#c98b51', 'CONVÉS PIRATA');
+    if (!this.textures.exists('stage-castle')) this.makeStage('stage-castle', '#54bffc', '#e9c28b', 'CASTELO REAL');
+    if (!this.textures.exists('stage-picnic')) this.makeStage('stage-picnic', '#66c8ff', '#69bd47', 'PIQUENIQUE');
+    if (!this.textures.exists('logo')) this.makeLogo();
+    if (!this.textures.exists('fighters')) this.makeFighters();
+    if (!this.textures.exists('menu')) this.makeMenu();
+  }
+
+  private makeStage(key: string, sky: string, ground: string, title: string) {
+    const tex = this.textures.createCanvas(key, 960, 540)!;
+    const ctx = tex.getContext();
+    const grad = ctx.createLinearGradient(0, 0, 0, 540);
+    grad.addColorStop(0, sky);
+    grad.addColorStop(0.67, '#dff6ff');
+    grad.addColorStop(0.68, ground);
+    grad.addColorStop(1, '#704227');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 960, 540);
+    ctx.fillStyle = 'rgba(255,255,255,.72)';
+    for (let i = 0; i < 7; i++) {
+      ctx.beginPath();
+      ctx.ellipse(80 + i * 145, 80 + (i % 3) * 45, 64, 23, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(0,0,0,.18)';
+    ctx.fillRect(0, 405, 960, 10);
+    ctx.font = 'bold 34px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(0,0,0,.25)';
+    ctx.fillText(title, 480, 505);
+    tex.refresh();
+  }
+
+  private makeLogo() {
+    const tex = this.textures.createCanvas('logo', 600, 360)!;
+    const ctx = tex.getContext();
+    ctx.textAlign = 'center';
+    ctx.lineJoin = 'round';
+    ctx.font = 'bold 96px Impact, Arial Black';
+    ctx.lineWidth = 18;
+    ctx.strokeStyle = '#173c78';
+    ctx.strokeText('PUNHO', 300, 145);
+    ctx.fillStyle = '#ffc72f';
+    ctx.fillText('PUNHO', 300, 145);
+    ctx.font = 'bold 118px Impact, Arial Black';
+    ctx.strokeText('FERRO', 300, 270);
+    ctx.fillStyle = '#43bdf5';
+    ctx.fillText('FERRO', 300, 270);
+    ctx.font = 'bold 34px Arial Black';
+    ctx.fillStyle = '#fff6c7';
+    ctx.fillText('DE', 300, 185);
+    tex.refresh();
+  }
+
+  private makeFighters() {
+    const tex = this.textures.createCanvas('fighters', 768, 768)!;
+    const ctx = tex.getContext();
+    const draw = (x: number, y: number, body: string, accent: string, name: string, kind: 'goblin'|'chicken'|'orc'|'duck') => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.clearRect(0, 0, 384, 384);
+      ctx.fillStyle = body;
+      ctx.strokeStyle = '#1c1717';
+      ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.ellipse(192, 190, kind === 'orc' ? 115 : 88, kind === 'orc' ? 105 : 90, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(192, 292, kind === 'orc' ? 118 : 86, 72, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = accent;
+      ctx.fillRect(115, 238, 154, 75);
+      ctx.strokeRect(115, 238, 154, 75);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.ellipse(158, 170, 25, 32, 0, 0, Math.PI * 2); ctx.ellipse(226, 170, 25, 32, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(165, 177, 10, 0, Math.PI*2); ctx.arc(219, 177, 10, 0, Math.PI*2); ctx.fill();
+      if (kind === 'chicken') { ctx.fillStyle='#e52436'; ctx.beginPath(); ctx.arc(192,87,42,0,Math.PI*2); ctx.fill(); }
+      if (kind === 'duck') { ctx.fillStyle='#e97620'; ctx.beginPath(); ctx.ellipse(192,210,55,22,0,0,Math.PI*2); ctx.fill(); }
+      if (kind === 'goblin') { ctx.fillStyle='#ffb34b'; ctx.beginPath(); ctx.ellipse(192,210,24,19,0,0,Math.PI*2); ctx.fill(); }
+      if (kind === 'orc') { ctx.fillStyle='#381743'; ctx.fillRect(155,72,74,35); }
+      ctx.font='bold 28px Arial Black'; ctx.textAlign='center'; ctx.fillStyle='#fff'; ctx.strokeStyle='#111'; ctx.lineWidth=5; ctx.strokeText(name,192,350); ctx.fillText(name,192,350);
+      ctx.restore();
+    };
+    draw(0,0,'#59d84f','#087b7c','BOB','goblin');
+    draw(384,0,'#fff7ed','#f0e8e2','JÚLIO','chicken');
+    draw(0,384,'#f3c52d','#5a2737','ORC','orc');
+    draw(384,384,'#f4c52f','#1766c2','TEDDY','duck');
+    tex.refresh();
+  }
+
+  private makeMenu() {
+    const tex = this.textures.createCanvas('menu', WIDTH, HEIGHT)!;
+    const ctx = tex.getContext();
+    const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+    grad.addColorStop(0, '#2faef1');
+    grad.addColorStop(0.58, '#8edaff');
+    grad.addColorStop(1, '#d79652');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,WIDTH,HEIGHT);
+    ctx.fillStyle='#e6c899';
+    for(let i=0;i<8;i++) ctx.fillRect(i*230,360+(i%2)*25,180,250);
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    ctx.font='bold 28px Arial';
+    ctx.textAlign='center';
+    ctx.fillText('PUNHO DE FERRO', WIDTH/2, 90);
+    tex.refresh();
   }
 }
 
