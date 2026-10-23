@@ -23,10 +23,10 @@ const HEIGHT = 941;
 const GROUND_Y = 805;
 
 const fighters: Record<FighterId, FighterConfig> = {
-  bob: { id: 'bob', name: 'BOB', speed: 265, jump: 625, maxJumps: 1, health: 100, scale: 0.74, damage: { light: 7, heavy: 13, special: 17 }, color: 0x45c96b, style: 'Espadachim equilibrado' },
-  julio: { id: 'julio', name: 'JÚLIO', speed: 282, jump: 655, maxJumps: 2, health: 94, scale: 0.68, damage: { light: 6, heavy: 10, special: 13 }, color: 0xffd8e6, style: 'Ágil, pulo duplo e ovos' },
-  orc: { id: 'orc', name: 'ORC', speed: 220, jump: 555, maxJumps: 1, health: 118, scale: 0.77, damage: { light: 9, heavy: 18, special: 24 }, color: 0xf3bb2a, style: 'Pesado, resistente e brutal' },
-  teddy: { id: 'teddy', name: 'TEDDY', speed: 332, jump: 680, maxJumps: 1, health: 92, scale: 0.67, damage: { light: 6, heavy: 10, special: 15 }, color: 0x2675de, style: 'Artes marciais e velocidade' },
+  bob: { id: 'bob', name: 'BOB', speed: 265, jump: 625, maxJumps: 1, health: 100, scale: 1.15, damage: { light: 7, heavy: 13, special: 17 }, color: 0x45c96b, style: 'Espadachim equilibrado' },
+  julio: { id: 'julio', name: 'JÚLIO', speed: 282, jump: 655, maxJumps: 2, health: 94, scale: 1.18, damage: { light: 6, heavy: 10, special: 13 }, color: 0xffd8e6, style: 'Ágil, pulo duplo e ovos' },
+  orc: { id: 'orc', name: 'ORC', speed: 220, jump: 555, maxJumps: 1, health: 118, scale: 1.62, damage: { light: 9, heavy: 18, special: 24 }, color: 0xf3bb2a, style: 'Pesado, resistente e brutal' },
+  teddy: { id: 'teddy', name: 'TEDDY', speed: 332, jump: 680, maxJumps: 1, health: 92, scale: 1.18, damage: { light: 6, heavy: 10, special: 15 }, color: 0x2675de, style: 'Artes marciais e velocidade' },
 };
 
 const stages: { id: StageId; name: string; texture: string }[] = [
@@ -68,262 +68,229 @@ function button(scene: Phaser.Scene, x: number, y: number, w: number, h: number,
   return c;
 }
 
+
+function fighterScale(id: FighterId, context: 'large' | 'card' | 'hud' = 'large') {
+  if (context === 'hud') return id === 'orc' ? 0.78 : 0.52;
+  if (context === 'card') return id === 'orc' ? 0.80 : 0.58;
+  return id === 'orc' ? 1.58 : id === 'bob' ? 1.22 : 1.18;
+}
+
+function addGoldTitle(scene: Phaser.Scene, text: string, x: number, y: number, size = 66) {
+  return scene.add.text(x, y, text, {
+    fontFamily: 'Impact, Arial Black, sans-serif',
+    fontSize: size + 'px',
+    color: '#ffd53b',
+    stroke: '#5a2205',
+    strokeThickness: 10,
+    shadow: { offsetX: 0, offsetY: 6, color: '#1b0800', blur: 2, fill: true }
+  }).setOrigin(0.5);
+}
+
 class BootScene extends Phaser.Scene {
   constructor() { super('boot'); }
   preload() {
-    this.load.image('menu', '/assets/menu.jpg');
-    this.load.image('logo', '/assets/logo.webp');
-    this.load.image('stage-grass', '/assets/stage-grass.jpg');
-    this.load.image('stage-ship', '/assets/stage-ship.jpg');
-    this.load.image('stage-castle', '/assets/stage-castle.jpg');
-    this.load.image('stage-picnic', '/assets/stage-picnic.jpg');
-    this.load.image('fighters', '/assets/fighters.webp');
+    this.load.image('menu-final', '/assets/menu.avif');
+    this.load.image('ui-atlas', '/assets/ui.atlas.avif');
+    this.load.image('stage-atlas', '/assets/stages.atlas.avif');
   }
 
   create() {
-    this.ensureFallbacks();
+    const ui = this.textures.get('ui-atlas');
+    ui.add('bob', 0, 0, 0, 256, 450);
+    ui.add('julio', 0, 256, 0, 256, 450);
+    ui.add('teddy', 0, 512, 0, 256, 450);
+    ui.add('orc', 0, 768, 0, 256, 450);
+    ui.add('logo', 0, 0, 450, 1024, 318);
 
-    const fighterTex = this.textures.get('fighters');
-    if (!fighterTex.has('bob')) fighterTex.add('bob', 0, 0, 0, 384, 384);
-    if (!fighterTex.has('julio')) fighterTex.add('julio', 0, 384, 0, 384, 384);
-    if (!fighterTex.has('orc')) fighterTex.add('orc', 0, 0, 384, 384, 384);
-    if (!fighterTex.has('teddy')) fighterTex.add('teddy', 0, 384, 384, 384, 384);
+    const stage = this.textures.get('stage-atlas');
+    stage.add('grass', 0, 0, 0, 480, 270);
+    stage.add('ship', 0, 480, 0, 480, 270);
+    stage.add('castle', 0, 0, 270, 480, 270);
+    stage.add('picnic', 0, 480, 270, 480, 270);
+
     this.scene.start('menu');
-  }
-
-  private ensureFallbacks() {
-    if (!this.textures.exists('stage-grass')) this.makeStage('stage-grass', '#39b9ff', '#76d34d', 'CAMPO DOS BLOCOS');
-    if (!this.textures.exists('stage-ship')) this.makeStage('stage-ship', '#29a7ef', '#c98b51', 'CONVÉS PIRATA');
-    if (!this.textures.exists('stage-castle')) this.makeStage('stage-castle', '#54bffc', '#e9c28b', 'CASTELO REAL');
-    if (!this.textures.exists('stage-picnic')) this.makeStage('stage-picnic', '#66c8ff', '#69bd47', 'PIQUENIQUE');
-    if (!this.textures.exists('logo')) this.makeLogo();
-    if (!this.textures.exists('fighters')) this.makeFighters();
-    if (!this.textures.exists('menu')) {
-      this.registry.set('fallbackMenu', true);
-      this.makeMenu();
-    }
-  }
-
-  private makeStage(key: string, sky: string, ground: string, title: string) {
-    const tex = this.textures.createCanvas(key, 960, 540)!;
-    const ctx = tex.getContext();
-    const grad = ctx.createLinearGradient(0, 0, 0, 540);
-    grad.addColorStop(0, sky);
-    grad.addColorStop(0.67, '#dff6ff');
-    grad.addColorStop(0.68, ground);
-    grad.addColorStop(1, '#704227');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 960, 540);
-    ctx.fillStyle = 'rgba(255,255,255,.72)';
-    for (let i = 0; i < 7; i++) {
-      ctx.beginPath();
-      ctx.ellipse(80 + i * 145, 80 + (i % 3) * 45, 64, 23, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.fillStyle = 'rgba(0,0,0,.18)';
-    ctx.fillRect(0, 405, 960, 10);
-    ctx.font = 'bold 34px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(0,0,0,.25)';
-    ctx.fillText(title, 480, 505);
-    tex.refresh();
-  }
-
-  private makeLogo() {
-    const tex = this.textures.createCanvas('logo', 600, 360)!;
-    const ctx = tex.getContext();
-    ctx.textAlign = 'center';
-    ctx.lineJoin = 'round';
-    ctx.font = 'bold 96px Impact, Arial Black';
-    ctx.lineWidth = 18;
-    ctx.strokeStyle = '#173c78';
-    ctx.strokeText('PUNHO', 300, 145);
-    ctx.fillStyle = '#ffc72f';
-    ctx.fillText('PUNHO', 300, 145);
-    ctx.font = 'bold 118px Impact, Arial Black';
-    ctx.strokeText('FERRO', 300, 270);
-    ctx.fillStyle = '#43bdf5';
-    ctx.fillText('FERRO', 300, 270);
-    ctx.font = 'bold 34px Arial Black';
-    ctx.fillStyle = '#fff6c7';
-    ctx.fillText('DE', 300, 185);
-    tex.refresh();
-  }
-
-  private makeFighters() {
-    const tex = this.textures.createCanvas('fighters', 768, 768)!;
-    const ctx = tex.getContext();
-    const draw = (x: number, y: number, body: string, accent: string, name: string, kind: 'goblin'|'chicken'|'orc'|'duck') => {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.clearRect(0, 0, 384, 384);
-      ctx.fillStyle = body;
-      ctx.strokeStyle = '#1c1717';
-      ctx.lineWidth = 9;
-      ctx.beginPath(); ctx.ellipse(192, 190, kind === 'orc' ? 115 : 88, kind === 'orc' ? 105 : 90, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(192, 292, kind === 'orc' ? 118 : 86, 72, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = accent;
-      ctx.fillRect(115, 238, 154, 75);
-      ctx.strokeRect(115, 238, 154, 75);
-      ctx.fillStyle = '#fff';
-      ctx.beginPath(); ctx.ellipse(158, 170, 25, 32, 0, 0, Math.PI * 2); ctx.ellipse(226, 170, 25, 32, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(165, 177, 10, 0, Math.PI*2); ctx.arc(219, 177, 10, 0, Math.PI*2); ctx.fill();
-      if (kind === 'chicken') { ctx.fillStyle='#e52436'; ctx.beginPath(); ctx.arc(192,87,42,0,Math.PI*2); ctx.fill(); }
-      if (kind === 'duck') { ctx.fillStyle='#e97620'; ctx.beginPath(); ctx.ellipse(192,210,55,22,0,0,Math.PI*2); ctx.fill(); }
-      if (kind === 'goblin') { ctx.fillStyle='#ffb34b'; ctx.beginPath(); ctx.ellipse(192,210,24,19,0,0,Math.PI*2); ctx.fill(); }
-      if (kind === 'orc') { ctx.fillStyle='#381743'; ctx.fillRect(155,72,74,35); }
-      ctx.font='bold 28px Arial Black'; ctx.textAlign='center'; ctx.fillStyle='#fff'; ctx.strokeStyle='#111'; ctx.lineWidth=5; ctx.strokeText(name,192,350); ctx.fillText(name,192,350);
-      ctx.restore();
-    };
-    draw(0,0,'#59d84f','#087b7c','BOB','goblin');
-    draw(384,0,'#fff7ed','#f0e8e2','JÚLIO','chicken');
-    draw(0,384,'#f3c52d','#5a2737','ORC','orc');
-    draw(384,384,'#f4c52f','#1766c2','TEDDY','duck');
-    tex.refresh();
-  }
-
-  private makeMenu() {
-    const tex = this.textures.createCanvas('menu', WIDTH, HEIGHT)!;
-    const ctx = tex.getContext();
-    const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-    grad.addColorStop(0, '#2faef1');
-    grad.addColorStop(0.58, '#8edaff');
-    grad.addColorStop(1, '#d79652');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0,0,WIDTH,HEIGHT);
-    ctx.fillStyle='#e6c899';
-    for(let i=0;i<8;i++) ctx.fillRect(i*230,360+(i%2)*25,180,250);
-    ctx.fillStyle='rgba(255,255,255,.55)';
-    ctx.font='bold 28px Arial';
-    ctx.textAlign='center';
-    ctx.fillText('PUNHO DE FERRO', WIDTH/2, 90);
-    tex.refresh();
   }
 }
 
 class MenuScene extends Phaser.Scene {
   constructor() { super('menu'); }
   create() {
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'menu'); fitCover(bg);
-    this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x000000, 0.05);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'menu-final');
+    bg.setDisplaySize(WIDTH, HEIGHT);
 
-    const one = this.add.zone(820, 626, 520, 93).setInteractive({ useHandCursor: true });
-    const two = this.add.zone(820, 741, 520, 93).setInteractive({ useHandCursor: true });
-    const pulse = (z: Phaser.GameObjects.Zone, y: number) => {
-      const glow = this.add.rectangle(820, y, 520, 93, 0xffc64a, 0).setStrokeStyle(5, 0xffd86b, 0);
-      z.on('pointerover', () => glow.setAlpha(0.14).setStrokeStyle(5, 0xffd86b, 1));
-      z.on('pointerout', () => glow.setAlpha(0).setStrokeStyle(5, 0xffd86b, 0));
+    const one = this.add.zone(820, 626, 520, 90).setInteractive({ useHandCursor: true });
+    const two = this.add.zone(820, 742, 520, 90).setInteractive({ useHandCursor: true });
+    const play = this.add.zone(820, 515, 520, 95).setInteractive({ useHandCursor: true });
+
+    const glow = (zone: Phaser.GameObjects.Zone, y: number) => {
+      const g = this.add.rectangle(820, y, 535, 98, 0xffdd55, 0)
+        .setStrokeStyle(5, 0xffdf55, 0)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      zone.on('pointerover', () => g.setAlpha(0.12).setStrokeStyle(5, 0xffdf55, 0.95));
+      zone.on('pointerout', () => g.setAlpha(0).setStrokeStyle(5, 0xffdf55, 0));
     };
-    pulse(one, 626); pulse(two, 741);
+    glow(play, 515); glow(one, 626); glow(two, 742);
+
+    play.on('pointerup', () => { session.mode = 1; this.scene.start('character'); });
     one.on('pointerup', () => { session.mode = 1; this.scene.start('character'); });
     two.on('pointerup', () => { session.mode = 2; this.scene.start('character'); });
 
-    if (this.registry.get('fallbackMenu')) {
-      this.add.image(WIDTH / 2, 250, 'logo').setDisplaySize(560, 340);
-      button(this, 820, 626, 520, 93, '1 JOGADOR', () => { session.mode = 1; this.scene.start('character'); });
-      button(this, 820, 741, 520, 93, '2 JOGADORES', () => { session.mode = 2; this.scene.start('character'); });
-    }
-
-    button(this, WIDTH - 155, HEIGHT - 58, 245, 62, 'CONTROLES', () => this.scene.start('controls'), 0x173f73);
-    this.add.text(24, HEIGHT - 28, 'v0.1 • protótipo jogável', { fontFamily: 'Arial, sans-serif', fontSize: '18px', color: '#ffffffaa' }).setOrigin(0, 1);
+    const controls = button(this, WIDTH - 152, HEIGHT - 55, 250, 64, 'CONTROLES', () => this.scene.start('controls'), 0x194b88);
+    controls.setDepth(10);
   }
 }
 
 class ControlsScene extends Phaser.Scene {
   constructor() { super('controls'); }
   create() {
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
-    this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x061a35, 0.68);
-    this.add.image(WIDTH / 2, 128, 'logo').setDisplaySize(520, 292);
-    this.add.text(WIDTH / 2, 265, 'CONTROLES', { fontFamily: 'Impact', fontSize: '74px', color: '#ffd23e', stroke: '#4d2104', strokeThickness: 9 }).setOrigin(0.5);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-atlas', 'castle').setDisplaySize(WIDTH, HEIGHT);
+    this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x08172d, 0.62);
+    this.add.image(WIDTH / 2, 104, 'ui-atlas', 'logo').setDisplaySize(470, 220);
+    addGoldTitle(this, 'CONTROLES', WIDTH / 2, 240, 70);
 
-    panel(this, 480, 520, 590, 400, 0x062951, 0.92, 0x39b9ff);
-    panel(this, 1192, 520, 590, 400, 0x501015, 0.92, 0xff4656);
-    this.add.text(480, 355, 'JOGADOR 1', { fontFamily: 'Impact', fontSize: '49px', color: '#7edcff', stroke: '#00192b', strokeThickness: 6 }).setOrigin(0.5);
-    this.add.text(1192, 355, 'JOGADOR 2', { fontFamily: 'Impact', fontSize: '49px', color: '#ff858e', stroke: '#2d0004', strokeThickness: 6 }).setOrigin(0.5);
+    const leftPanel = panel(this, 465, 525, 600, 440, 0x062852, 0.91, 0x3cc9ff);
+    const rightPanel = panel(this, 1207, 525, 600, 440, 0x4b0e15, 0.91, 0xff4458);
+    leftPanel.setStrokeStyle(7, 0x52d6ff);
+    rightPanel.setStrokeStyle(7, 0xff5365);
 
-    const left = ['A / D   mover', 'W       pular', 'F       ataque rápido', 'G       ataque forte', 'H       especial'];
-    const right = ['← / →   mover', '↑       pular', 'J       ataque rápido', 'K       ataque forte', 'L       especial'];
-    this.add.text(290, 410, left.join('\n'), { fontFamily: 'Arial Black', fontSize: '32px', color: '#ffffff', lineSpacing: 21 });
-    this.add.text(1000, 410, right.join('\n'), { fontFamily: 'Arial Black', fontSize: '32px', color: '#ffffff', lineSpacing: 21 });
-    this.add.text(WIDTH / 2, 760, 'ESC pausa a partida • Júlio pode pular novamente no ar', { fontFamily: 'Arial Black', fontSize: '25px', color: '#ffe0a1' }).setOrigin(0.5);
-    button(this, WIDTH / 2, 850, 300, 70, 'VOLTAR', () => this.scene.start('menu'), 0x4c4c58);
+    this.add.text(465, 340, 'JOGADOR 1', { fontFamily: 'Impact', fontSize: '52px', color: '#8ce8ff', stroke: '#02162e', strokeThickness: 7 }).setOrigin(0.5);
+    this.add.text(1207, 340, 'JOGADOR 2', { fontFamily: 'Impact', fontSize: '52px', color: '#ff9aa4', stroke: '#300008', strokeThickness: 7 }).setOrigin(0.5);
+
+    const left = ['A / D    MOVER', 'W        PULAR', 'F        ATAQUE RÁPIDO', 'G        ATAQUE FORTE', 'H        ESPECIAL'];
+    const right = ['← / →    MOVER', '↑        PULAR', 'J        ATAQUE RÁPIDO', 'K        ATAQUE FORTE', 'L        ESPECIAL'];
+    this.add.text(245, 405, left.join('\n\n'), { fontFamily: 'Arial Black', fontSize: '27px', color: '#ffffff' });
+    this.add.text(982, 405, right.join('\n\n'), { fontFamily: 'Arial Black', fontSize: '27px', color: '#ffffff' });
+    this.add.text(WIDTH / 2, 785, 'JÚLIO: aperte o pulo novamente no ar para o segundo impulso', { fontFamily: 'Arial Black', fontSize: '23px', color: '#ffe09a', stroke: '#3a1a05', strokeThickness: 4 }).setOrigin(0.5);
+    button(this, WIDTH / 2, 858, 300, 70, 'VOLTAR', () => this.scene.start('menu'), 0x4c4c58);
   }
 }
 
 class CharacterScene extends Phaser.Scene {
   private turn: 1 | 2 = 1;
   private status!: Phaser.GameObjects.Text;
+  private p1Art!: Phaser.GameObjects.Image;
+  private p2Art!: Phaser.GameObjects.Image;
+  private cardBorders = new Map<FighterId, Phaser.GameObjects.Rectangle>();
+
   constructor() { super('character'); }
+
   create() {
     this.turn = 1;
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
-    this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x03172b, 0.50);
-    this.add.image(WIDTH / 2, 118, 'logo').setDisplaySize(470, 264);
-    this.add.text(WIDTH / 2, 220, 'ESCOLHA SEU LUTADOR', { fontFamily: 'Impact', fontSize: '56px', color: '#ffe559', stroke: '#351104', strokeThickness: 9 }).setOrigin(0.5);
-    this.status = this.add.text(WIDTH / 2, 285, '', { fontFamily: 'Arial Black', fontSize: '30px', color: '#ffffff' }).setOrigin(0.5);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-atlas', 'castle').setDisplaySize(WIDTH, HEIGHT);
+    this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x07152a, 0.45);
+
+    this.add.image(WIDTH / 2, 102, 'ui-atlas', 'logo').setDisplaySize(480, 225);
+    this.status = this.add.text(WIDTH / 2, 220, '', {
+      fontFamily: 'Impact', fontSize: '42px', color: '#ffffff', stroke: '#251005', strokeThickness: 7
+    }).setOrigin(0.5);
+
+    this.add.rectangle(325, 445, 535, 455, 0x082f62, 0.86).setStrokeStyle(8, 0x39cfff);
+    this.add.rectangle(WIDTH - 325, 445, 535, 455, 0x620f18, 0.86).setStrokeStyle(8, 0xff4356);
+    this.add.text(325, 262, 'JOGADOR 1', { fontFamily: 'Impact', fontSize: '45px', color: '#d6f6ff', stroke: '#00162d', strokeThickness: 7 }).setOrigin(0.5);
+    this.add.text(WIDTH - 325, 262, session.mode === 1 ? 'CPU' : 'JOGADOR 2', { fontFamily: 'Impact', fontSize: '45px', color: '#ffe3e5', stroke: '#370007', strokeThickness: 7 }).setOrigin(0.5);
+
+    this.p1Art = this.add.image(325, 490, 'ui-atlas', session.p1).setOrigin(0.5, 0.62).setScale(fighterScale(session.p1, 'large'));
+    this.p2Art = this.add.image(WIDTH - 325, 490, 'ui-atlas', session.p2).setOrigin(0.5, 0.62).setScale(fighterScale(session.p2, 'large')).setFlipX(true);
 
     const ids: FighterId[] = ['bob', 'julio', 'teddy', 'orc'];
-    ids.forEach((id, i) => this.createCard(id, 265 + i * 380, 535));
-    button(this, 170, 860, 240, 65, 'VOLTAR', () => this.scene.start('menu'), 0x4c4c58);
+    ids.forEach((id, i) => this.createCard(id, 625 + i * 145, 680));
+
+    button(this, WIDTH / 2, 830, 430, 78, 'CONFIRMAR', () => this.confirm(), 0xb76b0e);
+    button(this, WIDTH / 2, 902, 255, 54, 'VOLTAR', () => this.scene.start('menu'), 0x454856);
     this.refreshStatus();
+    this.refreshSelection();
   }
+
   createCard(id: FighterId, x: number, y: number) {
-    const f = fighters[id];
     const c = this.add.container(x, y);
-    const bg = this.add.rectangle(0, 0, 320, 430, 0x17243a, 0.94).setStrokeStyle(6, 0xd5d9e6);
-    const portrait = this.add.image(0, -35, 'fighters', id).setOrigin(0.5, 0.6);
-    portrait.setScale(Math.min(260 / portrait.width, 290 / portrait.height));
-    const name = this.add.text(0, 145, f.name, { fontFamily: 'Impact', fontSize: '48px', color: '#ffffff', stroke: '#101010', strokeThickness: 7 }).setOrigin(0.5);
-    const style = this.add.text(0, 190, f.style, { fontFamily: 'Arial Black', fontSize: '18px', color: '#ffd887', align: 'center', wordWrap: { width: 285 } }).setOrigin(0.5);
-    c.add([bg, portrait, name, style]);
-    c.setSize(320, 430).setInteractive({ useHandCursor: true });
-    c.on('pointerover', () => c.setScale(1.04));
+    const border = this.add.rectangle(0, 0, 128, 128, 0x171a22, 0.97).setStrokeStyle(5, 0x817c74);
+    const portrait = this.add.image(0, 13, 'ui-atlas', id).setOrigin(0.5, 0.62).setScale(fighterScale(id, 'card'));
+    c.add([border, portrait]);
+    c.setSize(128, 128).setInteractive({ useHandCursor: true });
+    c.on('pointerover', () => c.setScale(1.07));
     c.on('pointerout', () => c.setScale(1));
-    c.on('pointerup', () => this.choose(id));
+    c.on('pointerup', () => this.select(id));
+    this.cardBorders.set(id, border);
   }
-  choose(id: FighterId) {
+
+  select(id: FighterId) {
     if (this.turn === 1) {
       session.p1 = id;
-      if (session.mode === 1) {
-        const pool = (['bob', 'julio', 'orc', 'teddy'] as FighterId[]).filter(v => v !== id);
-        session.p2 = Phaser.Utils.Array.GetRandom(pool);
-        this.scene.start('stage');
-      } else {
-        this.turn = 2;
-        this.refreshStatus();
+      this.p1Art.setFrame(id).setScale(fighterScale(id, 'large'));
+      if (session.mode === 1 && session.p2 === id) {
+        session.p2 = (['bob','julio','orc','teddy'] as FighterId[]).find(v => v !== id)!;
+        this.p2Art.setFrame(session.p2).setScale(fighterScale(session.p2, 'large'));
       }
     } else {
       session.p2 = id;
+      this.p2Art.setFrame(id).setScale(fighterScale(id, 'large')).setFlipX(true);
+    }
+    this.refreshSelection();
+  }
+
+  confirm() {
+    if (session.mode === 1) {
+      const pool = (['bob', 'julio', 'orc', 'teddy'] as FighterId[]).filter(v => v !== session.p1);
+      if (session.p2 === session.p1) session.p2 = Phaser.Utils.Array.GetRandom(pool);
+      this.scene.start('stage');
+      return;
+    }
+    if (this.turn === 1) {
+      this.turn = 2;
+      if (session.p2 === session.p1) session.p2 = (['bob','julio','orc','teddy'] as FighterId[]).find(v => v !== session.p1)!;
+      this.p2Art.setFrame(session.p2).setScale(fighterScale(session.p2, 'large')).setFlipX(true);
+      this.refreshStatus();
+      this.refreshSelection();
+    } else {
       this.scene.start('stage');
     }
   }
+
+  refreshSelection() {
+    this.cardBorders.forEach((border, id) => {
+      const selected = this.turn === 1 ? session.p1 === id : session.p2 === id;
+      border.setStrokeStyle(selected ? 7 : 5, selected ? (this.turn === 1 ? 0x46d5ff : 0xff4d61) : 0x817c74);
+    });
+  }
+
   refreshStatus() {
-    this.status.setText(this.turn === 1 ? 'JOGADOR 1 — escolha seu personagem' : 'JOGADOR 2 — escolha seu personagem');
-    this.status.setColor(this.turn === 1 ? '#80ddff' : '#ff9aa1');
+    this.status.setText(this.turn === 1 ? 'JOGADOR 1 — ESCOLHA SEU LUTADOR' : 'JOGADOR 2 — ESCOLHA SEU LUTADOR');
+    this.status.setColor(this.turn === 1 ? '#8de8ff' : '#ffadb5');
   }
 }
 
 class StageScene extends Phaser.Scene {
   constructor() { super('stage'); }
+
   create() {
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
-    this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x16100d, 0.47);
-    this.add.image(240, 120, 'logo').setDisplaySize(410, 230);
-    this.add.text(WIDTH / 2 + 120, 165, 'ESCOLHA O CENÁRIO', { fontFamily: 'Impact', fontSize: '68px', color: '#ffd736', stroke: '#4b1f05', strokeThickness: 10 }).setOrigin(0.5);
-    stages.forEach((s, i) => {
-      const x = 245 + i * 395; const y = 525;
-      const frame = this.add.container(x, y);
-      const border = this.add.rectangle(0, 0, 350, 245, 0x1b0d06, 0.95).setStrokeStyle(6, 0xb66d25);
-      const pic = this.add.image(0, -10, s.texture).setDisplaySize(326, 184);
-      const title = this.add.text(0, 106, s.name, { fontFamily: 'Arial Black', fontSize: '19px', color: '#fff2c6', stroke: '#210b02', strokeThickness: 5 }).setOrigin(0.5);
-      frame.add([border, pic, title]);
-      frame.setSize(350, 245).setInteractive({ useHandCursor: true });
-      frame.on('pointerover', () => { frame.setScale(1.045); border.setStrokeStyle(7, 0xffcf3c); });
-      frame.on('pointerout', () => { frame.setScale(1); border.setStrokeStyle(6, 0xb66d25); });
-      frame.on('pointerup', () => { session.stage = s.id; this.scene.start('fight'); });
+    this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-atlas', 'castle').setDisplaySize(WIDTH, HEIGHT);
+    this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x281309, 0.48);
+
+    this.add.image(225, 120, 'ui-atlas', 'logo').setDisplaySize(390, 185);
+    const sign = this.add.rectangle(WIDTH / 2 + 120, 150, 690, 150, 0x6b3518, 0.97).setStrokeStyle(8, 0x321306);
+    sign.setAngle(-1);
+    addGoldTitle(this, 'ESCOLHA O CENÁRIO', WIDTH / 2 + 120, 150, 62);
+
+    stages.forEach((stage, i) => {
+      const x = 245 + i * 395;
+      const y = 535;
+      const c = this.add.container(x, y);
+      const shadow = this.add.rectangle(7, 9, 352, 248, 0x160704, 0.8);
+      const border = this.add.rectangle(0, 0, 352, 248, 0x2b140b, 0.96).setStrokeStyle(7, 0xa96527);
+      const pic = this.add.image(0, -15, 'stage-atlas', stage.id).setDisplaySize(328, 184);
+      const title = this.add.text(0, 103, stage.name, {
+        fontFamily: 'Impact', fontSize: '25px', color: '#fff0bd', stroke: '#2b0c02', strokeThickness: 6
+      }).setOrigin(0.5);
+      c.add([shadow, border, pic, title]);
+      c.setSize(352, 248).setInteractive({ useHandCursor: true });
+      c.on('pointerover', () => { c.setScale(1.055); border.setStrokeStyle(8, 0xffca2b); });
+      c.on('pointerout', () => { c.setScale(1); border.setStrokeStyle(7, 0xa96527); });
+      c.on('pointerup', () => { session.stage = stage.id; this.scene.start('fight'); });
     });
-    button(this, 170, 865, 240, 65, 'VOLTAR', () => this.scene.start('character'), 0x4c4c58);
+
+    this.add.image(190, 330, 'ui-atlas', session.p1).setScale(fighterScale(session.p1, 'large') * 0.72).setOrigin(0.5, 0.6);
+    this.add.image(WIDTH - 190, 330, 'ui-atlas', session.p2).setScale(fighterScale(session.p2, 'large') * 0.72).setOrigin(0.5, 0.6).setFlipX(true);
+    button(this, 165, 870, 245, 62, 'VOLTAR', () => this.scene.start('character'), 0x4c4c58);
   }
 }
 
@@ -360,7 +327,7 @@ class FightScene extends Phaser.Scene {
     this.paused = false;
     this.projectiles = [];
     const stage = stages.find(s => s.id === session.stage)!;
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, stage.texture); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-atlas', stage.id).setDisplaySize(WIDTH, HEIGHT);
     this.add.rectangle(WIDTH / 2, HEIGHT - 52, WIDTH, 104, 0x000000, 0.08);
 
     const floor = this.physics.add.staticImage(WIDTH / 2, GROUND_Y + 78, '__DEFAULT').setDisplaySize(WIDTH, 110).setVisible(false).refreshBody();
@@ -397,7 +364,7 @@ class FightScene extends Phaser.Scene {
 
   spawn(id: FighterId, x: number, y: number, facing: 1 | -1, ai: boolean): FighterRuntime {
     const cfg = fighters[id];
-    const s = this.physics.add.sprite(x, y, 'fighters', id).setOrigin(0.5, 1).setScale(cfg.scale);
+    const s = this.physics.add.sprite(x, y, 'ui-atlas', id).setOrigin(0.5, 1).setScale(cfg.scale);
     s.setCollideWorldBounds(false).setBounce(0).setDragX(1800).setMaxVelocity(cfg.speed * 1.6, 1000);
     (s.body as Phaser.Physics.Arcade.Body).setSize(s.width * 0.50, s.height * 0.72, true);
     const f: FighterRuntime = { cfg, sprite: s, health: cfg.health, jumps: cfg.maxJumps, attacking: false, stunned: false, facing, lastAttackAt: 0, ai };
@@ -421,8 +388,8 @@ class FightScene extends Phaser.Scene {
     this.add.rectangle(1232, 80, 585, 44, 0x09121a, 0.94).setStrokeStyle(5, 0xff4c5f);
     this.p1Bar = this.add.rectangle(440 - 284, 80, 568, 30, 0x70e12f).setOrigin(0, 0.5);
     this.p2Bar = this.add.rectangle(1232 + 284, 80, 568, 30, 0x70e12f).setOrigin(1, 0.5);
-    this.add.image(80, 84, 'fighters', session.p1).setDisplaySize(102, 118);
-    this.add.image(WIDTH - 80, 84, 'fighters', session.p2).setDisplaySize(102, 118);
+    this.add.image(80, 84, 'ui-atlas', session.p1).setDisplaySize(102, 118);
+    this.add.image(WIDTH - 80, 84, 'ui-atlas', session.p2).setDisplaySize(102, 118);
     this.add.text(145, 26, `P1  ${fighters[session.p1].name}`, { fontFamily: 'Impact', fontSize: '34px', color: '#b9eaff', stroke: '#001628', strokeThickness: 6 });
     this.add.text(WIDTH - 145, 26, `${fighters[session.p2].name}  ${session.mode === 1 ? 'CPU' : 'P2'}`, { fontFamily: 'Impact', fontSize: '34px', color: '#ffbac0', stroke: '#2a0004', strokeThickness: 6 }).setOrigin(1, 0);
     panel(this, WIDTH / 2, 75, 150, 110, 0x10213a, 0.98, 0xffb82e);
