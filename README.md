@@ -38,17 +38,13 @@ Menu → modo de jogo → seleção de personagem → seleção de cenário → 
 
 ## Assets
 
-O jogo procura as artes finais em `public/assets/`:
+A versão visual atual usa os assets finais otimizados que já estão no repositório:
 
-- `menu.jpg`
-- `logo.webp`
-- `stage-grass.jpg`
-- `stage-ship.jpg`
-- `stage-castle.jpg`
-- `stage-picnic.jpg`
-- `fighters.webp`
+- `public/assets/menu.avif` — menu principal baseado no mockup final.
+- `public/assets/ui.atlas.avif` — Bob, Júlio, Teddy, Orc e logo.
+- `public/assets/stages.atlas.avif` — Campo dos Blocos, Convés Pirata, Castelo Real e Piquenique.
 
-Enquanto os binários finais não estiverem presentes, existem fallbacks desenhados pelo próprio Phaser para que a aplicação continue compilando e funcionando.
+As telas usam esses assets diretamente no Phaser; os placeholders procedurais deixaram de ser o visual padrão.
 
 ## Desenvolvimento
 
