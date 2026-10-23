@@ -32,7 +32,7 @@ const fighters: Record<FighterId, FighterConfig> = {
 const stages: { id: StageId; name: string; texture: string }[] = [
   { id: 'grass', name: 'CAMPO DOS BLOCOS', texture: 'stage-grass' },
   { id: 'ship', name: 'CONVÉS PIRATA', texture: 'stage-ship' },
-  { id: 'castle', name: 'CASTELO REAL', texture: 'stages', 'castle' },
+  { id: 'castle', name: 'CASTELO REAL', texture: 'stage-castle' },
   { id: 'picnic', name: 'PIQUENIQUE', texture: 'stage-picnic' },
 ];
 
@@ -73,21 +73,18 @@ class BootScene extends Phaser.Scene {
   preload() {
     this.load.image('menu', '/assets/menu.jpg');
     this.load.image('logo', '/assets/logo.webp');
-    this.load.image('stages', '/assets/stages.jpg');
+    this.load.image('stage-grass', '/assets/stage-grass.jpg');
+    this.load.image('stage-ship', '/assets/stage-ship.jpg');
+    this.load.image('stage-castle', '/assets/stage-castle.jpg');
+    this.load.image('stage-picnic', '/assets/stage-picnic.jpg');
     this.load.image('fighters', '/assets/fighters.webp');
   }
   create() {
-    const stageTex = this.textures.get('stages');
-    stageTex.add('grass', 0, 0, 0, 960, 540);
-    stageTex.add('ship', 0, 960, 0, 960, 540);
-    stageTex.add('castle', 0, 0, 540, 960, 540);
-    stageTex.add('picnic', 0, 960, 540, 960, 540);
-
     const fighterTex = this.textures.get('fighters');
-    fighterTex.add('bob', 0, 0, 0, 512, 512);
-    fighterTex.add('julio', 0, 512, 0, 512, 512);
-    fighterTex.add('orc', 0, 0, 512, 512, 512);
-    fighterTex.add('teddy', 0, 512, 512, 512, 512);
+    fighterTex.add('bob', 0, 0, 0, 384, 384);
+    fighterTex.add('julio', 0, 384, 0, 384, 384);
+    fighterTex.add('orc', 0, 0, 384, 384, 384);
+    fighterTex.add('teddy', 0, 384, 384, 384, 384);
     this.scene.start('menu');
   }
 }
@@ -117,7 +114,7 @@ class MenuScene extends Phaser.Scene {
 class ControlsScene extends Phaser.Scene {
   constructor() { super('controls'); }
   create() {
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stages', 'castle'); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
     this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x061a35, 0.68);
     this.add.image(WIDTH / 2, 128, 'logo').setDisplaySize(520, 292);
     this.add.text(WIDTH / 2, 265, 'CONTROLES', { fontFamily: 'Impact', fontSize: '74px', color: '#ffd23e', stroke: '#4d2104', strokeThickness: 9 }).setOrigin(0.5);
@@ -142,7 +139,7 @@ class CharacterScene extends Phaser.Scene {
   constructor() { super('character'); }
   create() {
     this.turn = 1;
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stages', 'castle'); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
     this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x03172b, 0.50);
     this.add.image(WIDTH / 2, 118, 'logo').setDisplaySize(470, 264);
     this.add.text(WIDTH / 2, 220, 'ESCOLHA SEU LUTADOR', { fontFamily: 'Impact', fontSize: '56px', color: '#ffe559', stroke: '#351104', strokeThickness: 9 }).setOrigin(0.5);
@@ -192,7 +189,7 @@ class CharacterScene extends Phaser.Scene {
 class StageScene extends Phaser.Scene {
   constructor() { super('stage'); }
   create() {
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stages', 'castle'); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
     this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x16100d, 0.47);
     this.add.image(240, 120, 'logo').setDisplaySize(410, 230);
     this.add.text(WIDTH / 2 + 120, 165, 'ESCOLHA O CENÁRIO', { fontFamily: 'Impact', fontSize: '68px', color: '#ffd736', stroke: '#4b1f05', strokeThickness: 10 }).setOrigin(0.5);
@@ -200,7 +197,7 @@ class StageScene extends Phaser.Scene {
       const x = 245 + i * 395; const y = 525;
       const frame = this.add.container(x, y);
       const border = this.add.rectangle(0, 0, 350, 245, 0x1b0d06, 0.95).setStrokeStyle(6, 0xb66d25);
-      const pic = this.add.image(0, -10, 'stages', s.id).setDisplaySize(326, 184);
+      const pic = this.add.image(0, -10, s.texture).setDisplaySize(326, 184);
       const title = this.add.text(0, 106, s.name, { fontFamily: 'Arial Black', fontSize: '19px', color: '#fff2c6', stroke: '#210b02', strokeThickness: 5 }).setOrigin(0.5);
       frame.add([border, pic, title]);
       frame.setSize(350, 245).setInteractive({ useHandCursor: true });
@@ -245,7 +242,7 @@ class FightScene extends Phaser.Scene {
     this.paused = false;
     this.projectiles = [];
     const stage = stages.find(s => s.id === session.stage)!;
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stages', stage.id); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, stage.texture); fitCover(bg);
     this.add.rectangle(WIDTH / 2, HEIGHT - 52, WIDTH, 104, 0x000000, 0.08);
 
     const floor = this.physics.add.staticImage(WIDTH / 2, GROUND_Y + 78, '__DEFAULT').setDisplaySize(WIDTH, 110).setVisible(false).refreshBody();
