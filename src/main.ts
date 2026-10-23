@@ -32,7 +32,7 @@ const fighters: Record<FighterId, FighterConfig> = {
 const stages: { id: StageId; name: string; texture: string }[] = [
   { id: 'grass', name: 'CAMPO DOS BLOCOS', texture: 'stage-grass' },
   { id: 'ship', name: 'CONVÉS PIRATA', texture: 'stage-ship' },
-  { id: 'castle', name: 'CASTELO REAL', texture: 'stage-castle' },
+  { id: 'castle', name: 'CASTELO REAL', texture: 'stages', 'castle' },
   { id: 'picnic', name: 'PIQUENIQUE', texture: 'stage-picnic' },
 ];
 
@@ -73,16 +73,23 @@ class BootScene extends Phaser.Scene {
   preload() {
     this.load.image('menu', '/assets/menu.jpg');
     this.load.image('logo', '/assets/logo.webp');
-    this.load.image('stage-grass', '/assets/stage-grass.jpg');
-    this.load.image('stage-ship', '/assets/stage-ship.jpg');
-    this.load.image('stage-castle', '/assets/stage-castle.jpg');
-    this.load.image('stage-picnic', '/assets/stage-picnic.jpg');
-    this.load.image('bob', '/assets/bob.webp');
-    this.load.image('julio', '/assets/julio.webp');
-    this.load.image('orc', '/assets/orc.webp');
-    this.load.image('teddy', '/assets/teddy.webp');
+    this.load.image('stages', '/assets/stages.jpg');
+    this.load.image('fighters', '/assets/fighters.webp');
   }
-  create() { this.scene.start('menu'); }
+  create() {
+    const stageTex = this.textures.get('stages');
+    stageTex.add('grass', 0, 0, 0, 960, 540);
+    stageTex.add('ship', 0, 960, 0, 960, 540);
+    stageTex.add('castle', 0, 0, 540, 960, 540);
+    stageTex.add('picnic', 0, 960, 540, 960, 540);
+
+    const fighterTex = this.textures.get('fighters');
+    fighterTex.add('bob', 0, 0, 0, 512, 512);
+    fighterTex.add('julio', 0, 512, 0, 512, 512);
+    fighterTex.add('orc', 0, 0, 512, 512, 512);
+    fighterTex.add('teddy', 0, 512, 512, 512, 512);
+    this.scene.start('menu');
+  }
 }
 
 class MenuScene extends Phaser.Scene {
@@ -110,7 +117,7 @@ class MenuScene extends Phaser.Scene {
 class ControlsScene extends Phaser.Scene {
   constructor() { super('controls'); }
   create() {
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stages', 'castle'); fitCover(bg);
     this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x061a35, 0.68);
     this.add.image(WIDTH / 2, 128, 'logo').setDisplaySize(520, 292);
     this.add.text(WIDTH / 2, 265, 'CONTROLES', { fontFamily: 'Impact', fontSize: '74px', color: '#ffd23e', stroke: '#4d2104', strokeThickness: 9 }).setOrigin(0.5);
@@ -135,7 +142,7 @@ class CharacterScene extends Phaser.Scene {
   constructor() { super('character'); }
   create() {
     this.turn = 1;
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stages', 'castle'); fitCover(bg);
     this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x03172b, 0.50);
     this.add.image(WIDTH / 2, 118, 'logo').setDisplaySize(470, 264);
     this.add.text(WIDTH / 2, 220, 'ESCOLHA SEU LUTADOR', { fontFamily: 'Impact', fontSize: '56px', color: '#ffe559', stroke: '#351104', strokeThickness: 9 }).setOrigin(0.5);
@@ -150,7 +157,7 @@ class CharacterScene extends Phaser.Scene {
     const f = fighters[id];
     const c = this.add.container(x, y);
     const bg = this.add.rectangle(0, 0, 320, 430, 0x17243a, 0.94).setStrokeStyle(6, 0xd5d9e6);
-    const portrait = this.add.image(0, -35, id).setOrigin(0.5, 0.6);
+    const portrait = this.add.image(0, -35, 'fighters', id).setOrigin(0.5, 0.6);
     portrait.setScale(Math.min(260 / portrait.width, 290 / portrait.height));
     const name = this.add.text(0, 145, f.name, { fontFamily: 'Impact', fontSize: '48px', color: '#ffffff', stroke: '#101010', strokeThickness: 7 }).setOrigin(0.5);
     const style = this.add.text(0, 190, f.style, { fontFamily: 'Arial Black', fontSize: '18px', color: '#ffd887', align: 'center', wordWrap: { width: 285 } }).setOrigin(0.5);
@@ -185,7 +192,7 @@ class CharacterScene extends Phaser.Scene {
 class StageScene extends Phaser.Scene {
   constructor() { super('stage'); }
   create() {
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stage-castle'); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stages', 'castle'); fitCover(bg);
     this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x16100d, 0.47);
     this.add.image(240, 120, 'logo').setDisplaySize(410, 230);
     this.add.text(WIDTH / 2 + 120, 165, 'ESCOLHA O CENÁRIO', { fontFamily: 'Impact', fontSize: '68px', color: '#ffd736', stroke: '#4b1f05', strokeThickness: 10 }).setOrigin(0.5);
@@ -193,7 +200,7 @@ class StageScene extends Phaser.Scene {
       const x = 245 + i * 395; const y = 525;
       const frame = this.add.container(x, y);
       const border = this.add.rectangle(0, 0, 350, 245, 0x1b0d06, 0.95).setStrokeStyle(6, 0xb66d25);
-      const pic = this.add.image(0, -10, s.texture).setDisplaySize(326, 184);
+      const pic = this.add.image(0, -10, 'stages', s.id).setDisplaySize(326, 184);
       const title = this.add.text(0, 106, s.name, { fontFamily: 'Arial Black', fontSize: '19px', color: '#fff2c6', stroke: '#210b02', strokeThickness: 5 }).setOrigin(0.5);
       frame.add([border, pic, title]);
       frame.setSize(350, 245).setInteractive({ useHandCursor: true });
@@ -238,7 +245,7 @@ class FightScene extends Phaser.Scene {
     this.paused = false;
     this.projectiles = [];
     const stage = stages.find(s => s.id === session.stage)!;
-    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, stage.texture); fitCover(bg);
+    const bg = this.add.image(WIDTH / 2, HEIGHT / 2, 'stages', stage.id); fitCover(bg);
     this.add.rectangle(WIDTH / 2, HEIGHT - 52, WIDTH, 104, 0x000000, 0.08);
 
     const floor = this.physics.add.staticImage(WIDTH / 2, GROUND_Y + 78, '__DEFAULT').setDisplaySize(WIDTH, 110).setVisible(false).refreshBody();
@@ -275,7 +282,7 @@ class FightScene extends Phaser.Scene {
 
   spawn(id: FighterId, x: number, y: number, facing: 1 | -1, ai: boolean): FighterRuntime {
     const cfg = fighters[id];
-    const s = this.physics.add.sprite(x, y, id).setOrigin(0.5, 1).setScale(cfg.scale);
+    const s = this.physics.add.sprite(x, y, 'fighters', id).setOrigin(0.5, 1).setScale(cfg.scale);
     s.setCollideWorldBounds(false).setBounce(0).setDragX(1800).setMaxVelocity(cfg.speed * 1.6, 1000);
     s.body.setSize(s.width * 0.50, s.height * 0.72, true);
     const f: FighterRuntime = { cfg, sprite: s, health: cfg.health, jumps: cfg.maxJumps, attacking: false, stunned: false, facing, lastAttackAt: 0, ai };
@@ -299,8 +306,8 @@ class FightScene extends Phaser.Scene {
     this.add.rectangle(1232, 80, 585, 44, 0x09121a, 0.94).setStrokeStyle(5, 0xff4c5f);
     this.p1Bar = this.add.rectangle(440 - 284, 80, 568, 30, 0x70e12f).setOrigin(0, 0.5);
     this.p2Bar = this.add.rectangle(1232 + 284, 80, 568, 30, 0x70e12f).setOrigin(1, 0.5);
-    this.add.image(80, 84, session.p1).setDisplaySize(102, 118);
-    this.add.image(WIDTH - 80, 84, session.p2).setDisplaySize(102, 118);
+    this.add.image(80, 84, 'fighters', session.p1).setDisplaySize(102, 118);
+    this.add.image(WIDTH - 80, 84, 'fighters', session.p2).setDisplaySize(102, 118);
     this.add.text(145, 26, `P1  ${fighters[session.p1].name}`, { fontFamily: 'Impact', fontSize: '34px', color: '#b9eaff', stroke: '#001628', strokeThickness: 6 });
     this.add.text(WIDTH - 145, 26, `${fighters[session.p2].name}  ${session.mode === 1 ? 'CPU' : 'P2'}`, { fontFamily: 'Impact', fontSize: '34px', color: '#ffbac0', stroke: '#2a0004', strokeThickness: 6 }).setOrigin(1, 0);
     panel(this, WIDTH / 2, 75, 150, 110, 0x10213a, 0.98, 0xffb82e);
