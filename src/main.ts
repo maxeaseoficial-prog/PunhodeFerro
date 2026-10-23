@@ -98,7 +98,10 @@ class BootScene extends Phaser.Scene {
     if (!this.textures.exists('stage-picnic')) this.makeStage('stage-picnic', '#66c8ff', '#69bd47', 'PIQUENIQUE');
     if (!this.textures.exists('logo')) this.makeLogo();
     if (!this.textures.exists('fighters')) this.makeFighters();
-    if (!this.textures.exists('menu')) this.makeMenu();
+    if (!this.textures.exists('menu')) {
+      this.registry.set('fallbackMenu', true);
+      this.makeMenu();
+    }
   }
 
   private makeStage(key: string, sky: string, ground: string, title: string) {
@@ -214,6 +217,12 @@ class MenuScene extends Phaser.Scene {
     pulse(one, 626); pulse(two, 741);
     one.on('pointerup', () => { session.mode = 1; this.scene.start('character'); });
     two.on('pointerup', () => { session.mode = 2; this.scene.start('character'); });
+
+    if (this.registry.get('fallbackMenu')) {
+      this.add.image(WIDTH / 2, 250, 'logo').setDisplaySize(560, 340);
+      button(this, 820, 626, 520, 93, '1 JOGADOR', () => { session.mode = 1; this.scene.start('character'); });
+      button(this, 820, 741, 520, 93, '2 JOGADORES', () => { session.mode = 2; this.scene.start('character'); });
+    }
 
     button(this, WIDTH - 155, HEIGHT - 58, 245, 62, 'CONTROLES', () => this.scene.start('controls'), 0x173f73);
     this.add.text(24, HEIGHT - 28, 'v0.1 • protótipo jogável', { fontFamily: 'Arial, sans-serif', fontSize: '18px', color: '#ffffffaa' }).setOrigin(0, 1);
