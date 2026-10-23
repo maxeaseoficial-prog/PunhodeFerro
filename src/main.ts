@@ -281,7 +281,7 @@ class FightScene extends Phaser.Scene {
     const cfg = fighters[id];
     const s = this.physics.add.sprite(x, y, 'fighters', id).setOrigin(0.5, 1).setScale(cfg.scale);
     s.setCollideWorldBounds(false).setBounce(0).setDragX(1800).setMaxVelocity(cfg.speed * 1.6, 1000);
-    s.body.setSize(s.width * 0.50, s.height * 0.72, true);
+    (s.body as Phaser.Physics.Arcade.Body).setSize(s.width * 0.50, s.height * 0.72, true);
     const f: FighterRuntime = { cfg, sprite: s, health: cfg.health, jumps: cfg.maxJumps, attacking: false, stunned: false, facing, lastAttackAt: 0, ai };
     this.updateFacing(f, facing);
 
@@ -354,7 +354,7 @@ class FightScene extends Phaser.Scene {
       f.jumps--;
       this.squash(f, 0.88, 1.10, 90);
     }
-    if (f.sprite.body.blocked.down) f.jumps = f.cfg.maxJumps;
+    if ((f.sprite.body as Phaser.Physics.Arcade.Body).blocked.down) f.jumps = f.cfg.maxJumps;
 
     if (Phaser.Input.Keyboard.JustDown(this.keys[`${prefix}Light`])) this.attack(f, 'light');
     if (Phaser.Input.Keyboard.JustDown(this.keys[`${prefix}Heavy`])) this.attack(f, 'heavy');
@@ -376,11 +376,11 @@ class FightScene extends Phaser.Scene {
       this.attack(ai, 'special');
     }
 
-    if (ai.sprite.body.blocked.down && dist > 380 && Math.random() < 0.004) {
+    if ((ai.sprite.body as Phaser.Physics.Arcade.Body).blocked.down && dist > 380 && Math.random() < 0.004) {
       ai.sprite.setVelocityY(-ai.cfg.jump);
       ai.jumps--;
     }
-    if (ai.sprite.body.blocked.down) ai.jumps = ai.cfg.maxJumps;
+    if ((ai.sprite.body as Phaser.Physics.Arcade.Body).blocked.down) ai.jumps = ai.cfg.maxJumps;
   }
 
   faceEachOther() {
@@ -449,7 +449,7 @@ class FightScene extends Phaser.Scene {
     g.destroy();
 
     const obj = this.physics.add.image(owner.sprite.x + owner.facing * 85, owner.sprite.y - 120, key).setScale(type === 'egg' ? 1 : 1.2);
-    obj.body.setAllowGravity(false);
+    (obj.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
     obj.setVelocityX(owner.facing * (type === 'egg' ? 520 : 650));
     this.projectiles.push({ owner, object: obj, damage });
   }
@@ -581,7 +581,7 @@ class FightScene extends Phaser.Scene {
   togglePause() {
     if (this.ended) return;
     this.paused = !this.paused;
-    this.physics.world.isPaused = this.paused;
+    this.paused ? this.physics.world.pause() : this.physics.world.resume();
 
     if (this.paused) {
       this.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x000000, 0.58).setName('pauseShade').setDepth(100);
